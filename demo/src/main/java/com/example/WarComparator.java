@@ -1,4 +1,5 @@
 package com.example;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,36 +20,41 @@ import java.util.zip.ZipFile;
 
 public class WarComparator {
 
-    public static void main(String[] args) throws Exception {
-        String war1Path = "C:\\Users\\rodrigo.machado\\teste\\Nova pasta\\prod.war";
-        String war2Path = "C:\\Users\\rodrigo.machado\\teste\\Nova pasta (2)\\dev.war";
+    public static void main(String[] args) {
+        try {
+            String war1Path = "C:\\Users\\rodrigo.machado\\teste\\Nova pasta\\prod.war";
+            String war2Path = "C:\\Users\\rodrigo.machado\\teste\\Nova pasta (2)\\dev.war";
 
-        Path dir1 = extractWar(war1Path, "temp_war1");
-        Path dir2 = extractWar(war2Path, "temp_war2");
+            Path dir1 = extractWar(war1Path, "temp_war1");
+            Path dir2 = extractWar(war2Path, "temp_war2");
 
-        Map<String, String> differences = compareDirectories(dir1, dir2);
+            Map<String, String> differences = compareDirectories(dir1, dir2);
 
-        if (differences.isEmpty()) {
-            System.out.println("Os WARs são iguais!");
-        } else {
-            System.out.println("\n=== Diferenças encontradas ===");
+            if (differences.isEmpty()) {
+                System.out.println("Os WARs são iguais!");
+            } else {
+                System.out.println("\n=== Diferenças encontradas ===");
 
-            Map<String, List<String>> categorizedDifferences = new HashMap<>();
-            differences.forEach((file, diff) -> {
-                categorizedDifferences.computeIfAbsent(diff, k -> new ArrayList<>()).add(file);
-            });
+                Map<String, List<String>> categorizedDifferences = new HashMap<>();
+                differences.forEach((file, diff) -> {
+                    categorizedDifferences.computeIfAbsent(diff, k -> new ArrayList<>()).add(file);
+                });
 
-            categorizedDifferences.forEach((category, files) -> {
-                String color = category.contains("ausente") ? "\u001B[31m" : "\u001B[34m";
-                System.out.println("\n" + color + category + ":\u001B[0m");
-                files.forEach(file -> System.out.println("  - " + file));
-            });
+                categorizedDifferences.forEach((category, files) -> {
+                    String color = category.contains("ausente") ? "\u001B[31m" : "\u001B[34m";
+                    System.out.println("\n" + color + category + ":\u001B[0m");
+                    files.forEach(file -> System.out.println("  - " + file));
+                });
 
-            System.out.println("\n\u001B[31m Total de diferenças: " + differences.size() + "\u001B[0m");
+                System.out.println("\n\u001B[31m Total de diferenças: " + differences.size() + "\u001B[0m");
+            }
+
+            deleteDirectory(dir1);
+            deleteDirectory(dir2);
+        } catch (Exception e) {
+            System.err.println("Erro durante a execução: " + e.getMessage());
+            e.printStackTrace();
         }
-
-        deleteDirectory(dir1);
-        deleteDirectory(dir2);
     }
 
     private static Path extractWar(String warPath, String tempDirName) throws IOException {
@@ -61,6 +67,7 @@ public class WarComparator {
                 if (entry.isDirectory()) {
                     entryFile.mkdirs();
                 } else {
+                    entryFile.getParentFile().mkdirs(); // Garante que os diretórios sejam criados
                     try (InputStream is = zipFile.getInputStream(entry);
                          OutputStream os = new FileOutputStream(entryFile)) {
                         byte[] buffer = new byte[1024];
@@ -95,7 +102,7 @@ public class WarComparator {
             try {
                 String hash1 = getFileChecksum(path1);
                 String hash2 = getFileChecksum(path2);
-            
+
                 if (!hash1.equals(hash2)) {
                     differences.put(relativePath.toString(), "Conteúdo diferente");
                 }
@@ -117,6 +124,8 @@ public class WarComparator {
     }
 
     private static String getFileChecksum(Path file) throws IOException, NoSuchAlgorithmException {
+        if (Files.isDirectory(file)) return ""; // Ignora diretórios
+
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         try (InputStream is = Files.newInputStream(file)) {
             byte[] buffer = new byte[1024];
