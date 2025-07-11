@@ -4,22 +4,7 @@ This Java code compares two WAR files by extracting and analyzing their contents
 
 ## 📂 Files
 
-demo/
-├── src/
-│   ├── main/
-│   │   └── java/
-│   │       └── com/
-│   │           └── example/
-│   │               └── WarComparator.java
-│   └── test/
-│       └── java/
-│           └── com/
-│               └── example/
-├── target/
-│   └── maven-status/
-│       └── maven-compiler-plugin/
-├── pom.xml
-└── README.md
+demo/src/main/java/com/example/WarComparator.java `Main code`
 
 ## ⚙️ Setup
 
