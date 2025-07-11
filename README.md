@@ -10,7 +10,7 @@ demo/
 │   │   └── java/
 │   │       └── com/
 │   │           └── example/
-│   │               └── WarComparator.java `Main code`
+│   │               └── WarComparator.java
 │   └── test/
 │       └── java/
 │           └── com/
